@@ -2,7 +2,7 @@ project:
   type: website
   pre-render: download_resources.R
   resources:
-    - pilot_mudab.sqlite
+    - pilot_4demon.sqlite
     - libs/sqljs/
   render:
     - "*.qmd"
