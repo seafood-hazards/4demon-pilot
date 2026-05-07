@@ -1,0 +1,101 @@
+---
+title: "Data Preparation"
+subtitle: "Cleaning and standardising the 4DEMON dataset for the pilot database"
+---
+
+```{r setup, include=FALSE}
+library(tibble)
+```
+
+This page documents the data preparation steps applied to the raw 4DEMON export before loading it into the pilot SQLite database. The raw file uses abbreviated uppercase column names and encoded unit strings that are standardised here for readability and consistency.
+
+---
+
+## 1. Column Name Conversion
+
+The raw 4DEMON CSV export uses abbreviated uppercase column names. The table below maps each original name to its descriptive English equivalent used throughout the database. Te unit encoding `\xb5g/g dw` (a Windows-1252 artifact for the µ character) is replaced with the correct `µg/g dw`.
+
+```{r}
+tribble(
+  ~`Original Name`,               ~`New Name`,                   ~`Description`,
+
+  # Sample identifiers
+  "SPE_SEQNO",                    "sample_seq_no",               "Sequential sample identifier. Groups all parameters measured from the same physical sample (1,612 unique samples).",
+  "SVE_SEQNO",                    "survey_seq_no",               "Sequential survey value identifier. Unique per row — one measurement per row.",
+  "SAMPLE_REFERENCE_CODE",        "sample_ref_code",             "Original sample reference code combining station, gear, and timestamp (e.g. 99_1979-120-VV-1/01/1979 12:00).",
+  "SON_CPN_CODE",                 "campaign_code",               "Campaign (survey leg) code combining project prefix and year (e.g. 99_1979). Groups all samples from the same annual survey.",
+  "SON_TIMESTAMP",                "sample_timestamp",            "Timestamp assigned to the sample event (DD/MM/YYYY HH:MM). Often set to 01/01/YYYY 12:00 when the exact date is unknown.",
+  "START_DATE",                   "start_date",                  "Actual sampling date and time where known (DD/MM/YYYY HH:MM). May differ from sample_timestamp.",
+
+  # Time
+  "YEAR",                         "year",                        "Year of sampling (1971–2014).",
+  "month",                        "month",                       "Month of sampling (1–12).",
+  "quadri",                       "season",                      "Seasonal quadrimester: 1 = Jan–Apr (winter/spring), 2 = May–Aug (summer), 3 = Sep–Dec (autumn).",
+
+  # Sample collection
+  "SGR_CODE",                     "gear_code",                   "Sampling gear code: VV = Van Veen grab (bulk surface sediment), BC = box corer (intact core).",
+  "SSA_DEPTH_RANGE",              "depth_range",                 "Sediment depth range sampled. Always 0–20 cm in this dataset.",
+  "FSE_RANGE",                    "fraction_range_um",           "Grain size fraction analysed in micrometres (e.g. 0-63 = fine fraction <63 µm, 0-2000 = bulk sediment <2 mm).",
+  "REPLICATE_NUMBER",             "replicate_number",            "Replicate index for repeated measurements on the same sample (1, 2, or 3).",
+
+  # Station
+  "STN_GROUP",                    "station_group",               "Station group: BCP = Belgian Continental Platform (offshore), BCP_nearby_coast_(<500m) = nearshore within 500 m of coast.",
+  "STN_CODE",                     "station_code",                "Station identifier code (162 unique stations).",
+  "START_LATITUDE_corr",          "latitude",                    "Corrected latitude of the sampling station (decimal degrees, WGS84).",
+  "START_LONGITUDE_corr",         "longitude",                   "Corrected longitude of the sampling station (decimal degrees, WGS84).",
+
+  # Project
+  "PROJECT",                      "project",                     "Monitoring or research project name: BAGGER, MONIT_SED, MMP_NS_RBINS-MUMM, PMPZ-DBII_PMPZ_COAST, UA_VAN_GRIEKEN.",
+  "PJT_SVE_ID",                   "project_survey_id",           "Numeric project identifier (1 = UA_VAN_GRIEKEN, 2 = BAGGER, 3 = MONIT_SED, 7 = PMPZ-DBII_PMPZ_COAST).",
+
+  # Matrix and method
+  "PMX_MTX_CODE",                 "matrix_code",                 "Sediment matrix code: FS = fine sediment (<63 µm fraction), US = unsieved / bulk sediment.",
+  "AMD_SEQNO",                    "method_seq_no",               "Sequential analytical method identifier (102 unique methods).",
+  "AMD_SEQNO_new",                "method_code",                 "Harmonised analytical method code combining project, technique, and fraction (e.g. Monit3_OES/MS_63 = monitoring period 3, ICP-OES/MS, <63 µm).",
+
+  # Parameter and value
+  "PMX_PRR_CODE",                 "parameter",                   "Parameter code: metals (AL, AS, CD, CR, CU, FE, HG, NI, PB, ZN) and PCB congeners (CB28, CB52, CB101, CB118, CB138, CB153, CB180).",
+  "VALUE_ORIG",                   "value",                       "Original measured value in the reported unit (µg/g dry weight).",
+  "VALUE_CORR",                   "corrected_value",             "Corrected or standardised value after quality control (e.g. below-detection substitutions, unit conversions). Recommended for analysis.",
+  "PMX_UNT_CODE",                 "unit",                        "Unit of measurement: µg/g dry weight (all rows). The raw encoding '\\xb5g/g dw' is replaced with 'µg/g dw'.",
+
+  # Quality flags
+  "VALUE_FLAG",                   "value_flag",                  "Data quality flag: 0 = valid, 1 = suspect, 2 = below detection limit, 3 = invalid.",
+  "DETLIMFLAG",                   "det_limit_flag",              "Detection limit flag: 0 = value above detection limit, 1 = at or below detection limit.",
+  "range_check_flag",             "range_check_flag",            "Range check flag: 0 = within expected range, 1 = outside expected range, NA = not checked.",
+  "OUTLIER_EXTREME_PRR",          "outlier_extreme_flag",        "Extreme outlier flag per parameter: 0 = normal, 1 = moderate outlier, 2 = extreme outlier.",
+  "OUTLIER_FLAG_stdev",           "outlier_stdev_flag",          "Standard deviation outlier flag: 0 = within normal range, 1 = outlier based on standard deviation threshold.",
+
+  # Corrected reference
+  "SAMPLE_REFERENCE_CODE_CORR",   "corrected_sample_ref_code",   "Corrected version of sample_ref_code after resolving duplicates or transcription errors (1,611 unique values vs 1,612 in the original)."
+)
+```
+
+---
+
+## 2. Parameter Names and Classification
+
+The dataset contains 17 parameters: 10 metals and 7 PCB congeners. The table below maps each parameter code to its full name and classifies it as either a metal or PCB. This is used to populate the `parameter` table in the database.
+
+```{r}
+tribble(
+  ~`Parameter Code`, ~`Parameter Name`,   ~`Type`,
+  "AL",              "aluminium",          "metal",
+  "AS",              "arsenic",            "metal",
+  "CD",              "cadmium",            "metal",
+  "CR",              "chromium",           "metal",
+  "CU",              "copper",             "metal",
+  "FE",              "iron",               "metal",
+  "HG",              "mercury",            "metal",
+  "NI",              "nickel",             "metal",
+  "PB",              "lead",               "metal",
+  "ZN",              "zinc",               "metal",
+  "CB28",            "PCB congener 28",    "PCB",
+  "CB52",            "PCB congener 52",    "PCB",
+  "CB101",           "PCB congener 101",   "PCB",
+  "CB118",           "PCB congener 118",   "PCB",
+  "CB138",           "PCB congener 138",   "PCB",
+  "CB153",           "PCB congener 153",   "PCB",
+  "CB180",           "PCB congener 180",   "PCB"
+)
+```
