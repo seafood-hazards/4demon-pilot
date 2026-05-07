@@ -174,7 +174,7 @@ map_data = db.query(`
               WHEN s1.unit = 'µg/g dw' THEN s1.value
               ELSE NULL
             END
-           ) AS avg_value_ug_per_kg
+           ) AS avg_value
     FROM sediment s1
     JOIN sample s2 ON s2.sample_id = s1.sample_id
     JOIN station s3 ON s3.station_id = s2.station_id
@@ -198,9 +198,7 @@ function markerColor(v) {
 }
 
 function fmtVal(v) {
-  return v == null ? "N/A"
-    : v >= 1000  ? (v / 1000).toFixed(0) + " mg/g"
-    : v.toFixed(0) + " µg/g"
+  return v == null ? "N/A" : v.toFixed(0) + " µg/g"
 }
 
 // --- Render / update map ---
@@ -255,7 +253,7 @@ function fmtVal(v) {
     legendEl.innerHTML = `
       <div class="legend-title">${selected_element.label}</div>
       <div style="font-size:11px;color:#555">
-        Avg (µg/kg) · ${year_start}–${year_end} · ${organisationLabel}
+        Avg (µg/g) · ${year_start}–${year_end} · ${organisationLabel}
       </div>
       <div class="legend-bar"></div>
       <div class="legend-labels">
@@ -270,10 +268,10 @@ function fmtVal(v) {
   mutable clicked_point = null
 
   for (const d of map_data) {
-    if (d.avg_value_ug_per_kg == null) continue
+    if (d.avg_value == null) continue
     const circle = L.circleMarker([d.latitude, d.longitude], {
       radius:      7,
-      fillColor:   markerColor(d.avg_value_ug_per_kg),
+      fillColor:   markerColor(d.avg_value),
       color:       "#333",
       weight:      0.8,
       opacity:     1,
@@ -281,7 +279,7 @@ function fmtVal(v) {
     })
     circle.bindTooltip(
       `<b>${selected_element.label}</b><br>
-       Avg: ${fmtVal(d.avg_value_ug_per_kg)}<br>
+       Avg: ${fmtVal(d.avg_value)}<br>
        (${year_start}–${year_end})`,
       { sticky: true }
     )
@@ -294,7 +292,7 @@ function fmtVal(v) {
 
 map_data.length === 0
   ? md`*No data found for this selection.*`
-  : md`**${selected_element.label}** · ${year_start}–${year_end} · ${selected_project} · **${map_data.length}** locations · values in µg/kg`
+  : md`**${selected_element.label}** · ${year_start}–${year_end} · ${selected_project} · **${map_data.length}** locations · values in µg/g`
 ```
 
 ```{ojs}
