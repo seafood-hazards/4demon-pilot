@@ -15,85 +15,73 @@ The data file was created for the initial analysis using the 4Demon data.
 
 A tab-delimited file containing all major data from the database is available for download at the following location.
 
- * [pilot_mudab.tsv.gz](https://github.com/seafood-hazards/4demon-pilot/releases/download/v0.1.0/pilot_4demon.tsv.gz)
+ * [pilot_4demon.tsv.gz](https://github.com/seafood-hazards/4demon-pilot/releases/download/v0.1.0/pilot_4demon.tsv.gz)
 
 ## Data File Summary
 
 The file `pilot_4demon.tsv.gz` is a denormalized (flat) export of the relational database, designed to facilitate immediate analysis without requiring complex SQL joins.
 
 ## Column Definition
-
 ```{r setup, include=FALSE}
 library(tibble)
 ```
 
+This page describes all columns in the exported sediment data file `pilot_4demon.tsv.gz`. The file is produced by joining six database tables and selecting the columns listed below.
+
 ```{r}
 tribble(
-  ~`Column Name`,                    ~`Source Table`,      ~`Type`,    ~`Description`,
+  ~`Column Name`,        ~`Source Table`, ~`Type`,    ~`Description`,
 
-  # --- Keys ---
-  "station_no",                      "station",            "INTEGER",  "Surrogate key linking to the station table.",
-  "measurement_time_id",             "measurement_time",   "INTEGER",  "Surrogate key linking to the measurement_time table.",
-  "analysis_method_id",              "analysis_method",    "INTEGER",  "Surrogate key linking to the analysis_method table.",
-  "reference_material_id",           "reference_material", "INTEGER",  "Surrogate key linking to the reference_material table.",
-  "survey_id",                       "survey",             "INTEGER",  "Surrogate key linking to the survey table.",
-  "sample_no",                       "sample",             "INTEGER",  "Surrogate key linking to the sample table.",
-  "lod_id",                          "lod",                "INTEGER",  "Surrogate key linking to the lod table.",
+  # --- Measurement identifier ---
+  "survey_seq_no",       "sediment",      "INTEGER",  "Original sequential survey value identifier — unique per row.",
 
-  # --- Station metadata ---
-  "organisation",                    "station",            "TEXT",     "Organisation type responsible for the station (e.g. NATIONAL, OSPAR, HELCOM).",
-  "project_affiliation",             "station",            "TEXT",     "Monitoring programme affiliation (e.g. BLMP+).",
-  "responsible_institute",           "station",            "TEXT",     "Institute responsible for the station.",
-  "region",                          "station",            "TEXT",     "Sea region (e.g. North Sea, Baltic Sea).",
-  "water_body_category",             "station",            "TEXT",     "Water body category code.",
+  # --- Project ---
+  "project_id",          "project",       "INTEGER",  "Surrogate key linking to the project table.",
+  "project",             "project",       "TEXT",     "Project name (e.g. BAGGER, MONIT_SED, MMP_NS_RBINS-MUMM, PMPZ-DBII_PMPZ_COAST, UA_VAN_GRIEKEN).",
+  "campaign_code",       "project",       "TEXT",     "Campaign code combining project prefix and year (e.g. 99_1979). Groups all samples from the same annual survey.",
+  "year",                "project",       "INTEGER",  "Year of sampling (1971–2014).",
+  "month",               "project",       "INTEGER",  "Month of sampling (1–12).",
 
-  # --- Measurement time ---
-  "year",                            "measurement_time",   "REAL",     "Year of measurement.",
-  "survey_start",                    "survey",             "REAL",     "Survey start date (integer format YYYYMMDD).",
-  "survey_end",                      "survey",             "REAL",     "Survey end date (integer format YYYYMMDD).",
+  # --- Station ---
+  "station_id",          "station",       "INTEGER",  "Surrogate key linking to the station table.",
+  "station_code",        "station",       "TEXT",     "Station identifier code (162 unique stations).",
+  "latitude",            "station",       "REAL",     "Corrected latitude of the sampling station (decimal degrees, WGS84).",
+  "longitude",           "station",       "REAL",     "Corrected longitude of the sampling station (decimal degrees, WGS84).",
+  "dist_to_coast",       "station",       "REAL",     "Distance from station to nearest coastline (km).",
+  "est_country",         "station",       "TEXT",     "Estimated country derived from station coordinates.",
+  "country_code",        "station",       "TEXT",     "ISO country code (e.g. BE for Belgium).",
+  "municipality",        "station",       "TEXT",     "Municipality name nearest to the station.",
+  "sea_name",            "station",       "TEXT",     "Name of the sea or marine region.",
 
-  # --- Location ---
-  "station_latitude",                "survey",             "REAL",     "Latitude of the monitoring station (decimal degrees).",
-  "station_longitude",               "survey",             "REAL",     "Longitude of the monitoring station (decimal degrees).",
-  "dist_to_coast",                   "survey",             "REAL",     "Distance from station to nearest coastline (km).",
-  "est_country",                     "survey",             "TEXT",     "Estimated country derived from station coordinates.",
-  "country_code",                    "survey",             "TEXT",     "ISO country code (e.g. DE).",
-  "municipality",                    "survey",             "TEXT",     "Municipality name.",
-  "sea_name",                        "survey",             "TEXT",     "Name of the sea or ocean.",
+  # --- Sample ---
+  "sample_id",           "sample",        "INTEGER",  "Surrogate key linking to the sample table.",
+  "gear_code",           "sample",        "TEXT",     "Sampling gear code: VV = Van Veen grab (bulk surface sediment), BC = box corer (intact core).",
+  "depth_range",         "sample",        "TEXT",     "Sediment depth range sampled. Always 0–20 cm in this dataset.",
 
-  # --- Sample metadata ---
-  "sampling_method",                 "sample",             "TEXT",     "Method used to collect the sample (e.g. BC = box corer, VV = Van Veen grab).",
-  "matrix",                          "sample",             "TEXT",     "Sediment matrix fraction code (e.g. SED20, SED63, SED2000).",
-  "sediment_composition",            "sample",             "TEXT",     "Field description of the sediment composition (translated to English).",
-  "sediment_no",                     "sediment",           "INTEGER",  "Sequential index for multiple sediment layers within a sample.",
-  "layer_upper_boundary",            "sample",             "REAL",     "Upper depth boundary of the sampled sediment layer (cm).",
-  "layer_lower_boundary",            "sample",             "REAL",     "Lower depth boundary of the sampled sediment layer (cm).",
+  # --- Method ---
+  "method_id",           "method",        "INTEGER",  "Surrogate key linking to the method table.",
+  "method_code",         "method",        "TEXT",     "Harmonised analytical method code combining project, technique, and fraction (e.g. Monit3_OES/MS_63 = monitoring period 3, ICP-OES/MS, <63 µm).",
+  "matrix_code",         "method",        "TEXT",     "Sediment matrix code: FS = fine sediment (<63 µm fraction), US = unsieved / bulk sediment.",
+  "fraction_range_um",   "method",        "TEXT",     "Grain size fraction analysed in micrometres (e.g. 0-63 = fine fraction <63 µm, 0-2000 = bulk sediment <2 mm).",
+
+  # --- Sample replicate ---
+  "replicate_number",    "sample",        "INTEGER",  "Replicate index for repeated measurements on the same sample (1, 2, or 3).",
 
   # --- Parameter ---
-  "parameter",                       "parameter",          "TEXT",     "ICES parameter code (e.g. HG, CD, ZN).",
-  "parameter_name",                  "parameter",          "TEXT",     "Full name of the parameter (e.g. mercury, cadmium).",
-  "parameter_group",                 "parameter",          "TEXT",     "Parameter group code (e.g. I-MET for metals and metalloids).",
-  "cas_number",                      "parameter",          "TEXT",     "Chemical Abstracts Service registry number.",
+  "parameter",           "parameter",     "TEXT",     "Parameter code: metals (AL, AS, CD, CR, CU, FE, HG, NI, PB, ZN) and PCB congeners (CB28, CB52, CB101, CB118, CB138, CB153, CB180).",
+  "parameter_type",      "parameter",     "TEXT",     "Parameter category: metal or PCB.",
+  "parameter_name",      "parameter",     "TEXT",     "Full parameter name (e.g. mercury, zinc, PCB congener 153).",
 
   # --- Measurement ---
-  "measured_value",                  "sediment",           "REAL",     "Measured concentration or numerical result.",
-  "unit",                            "sediment",           "TEXT",     "Unit of measurement (e.g. mg/kg, g/kg).",
-  "data_qualifier",                  "sediment",           "TEXT",     "Data quality qualifier code.",
+  "value",               "sediment",      "REAL",     "Original measured value in µg/g dry weight.",
+  "corrected_value",     "sediment",      "REAL",     "Corrected value after quality control (e.g. below-detection substitutions). Recommended for analysis.",
+  "unit",                "sediment",      "TEXT",     "Unit of measurement (µg/g dry weight for all rows).",
 
-  # --- Analysis method ---
-  "analytical_laboratory",           "analysis_method",    "TEXT",     "Code of the laboratory that performed the analysis.",
-  "internal_qa_count",               "sediment",           "REAL",     "Number of measurements used for internal quality assurance.",
-  "internal_qa_detection_limit",     "lod",                "REAL",     "Limit of detection value for this parameter measurement.",
-  "recovery_rate",                   "sediment",           "REAL",     "Analytical recovery rate (%).",
-  "internal_qa_quantification_limit","lod",                "REAL",     "Limit of quantification value for this parameter measurement.",
-  "expanded_uncertainty_pct",        "lod",                "REAL",     "Expanded measurement uncertainty expressed as a percentage.",
-  "uncertainty_method",              "lod",                "TEXT",     "Method used to determine the measurement uncertainty.",
-  "measurement_method_code",         "analysis_method",    "TEXT",     "Analytical measurement method code (e.g. AAS-CV, ICP-OES).",
-  "chemical_treatment",              "analysis_method",    "TEXT",     "Chemical treatment applied to the sample (e.g. HF-C, HNO).",
-  "physical_treatment",              "analysis_method",    "TEXT",     "Physical pre-treatment applied to the sample (e.g. DFRZ = freeze-drying).",
-  "measurement_basis",               "analysis_method",    "TEXT",     "Basis of measurement (e.g. D = dry weight).",
-  "accreditation",                   "analysis_method",    "TEXT",     "Accreditation status of the analytical laboratory."
+  # --- Quality flags ---
+  "value_flag",          "sediment",      "INTEGER",  "Data quality flag: 0 = valid, 1 = suspect, 2 = below detection limit, 3 = invalid.",
+  "det_limit_flag",      "sediment",      "INTEGER",  "Detection limit flag: 0 = above detection limit, 1 = at or below detection limit.",
+  "range_check_flag",    "sediment",      "INTEGER",  "Range check flag: 0 = within expected range, 1 = outside expected range, NA = not checked.",
+  "outlier_extreme_flag","sediment",      "INTEGER",  "Extreme outlier flag per parameter: 0 = normal, 1 = moderate outlier, 2 = extreme outlier.",
+  "outlier_stdev_flag",  "sediment",      "INTEGER",  "Standard deviation outlier flag: 0 = within normal range, 1 = outlier based on standard deviation threshold."
 )
-
 ```
-
