@@ -1,14 +1,14 @@
-# MUDAB Pilot Database
+# 4Demon Pilot Database
 
-[![DOI](https://zenodo.org/badge/1227957054.svg)](https://doi.org/10.5281/zenodo.20036772)
+[![DOI](https://zenodo.org/badge/1231115108.svg)](https://doi.org/10.5281/zenodo.20056924)
 
-This repository contains the source Quarto Markdown documents for the [Marine Environmental Database (MUDAB)](https://www.mudab.de/en) website.
+This repository contains the source Quarto Markdown documents for the [Four Decades of Belgian Marine Monitoring (4Demon)](https://www.vliz.be/projects/4demon/index.htm) website.
 
 ## License
 This project is licensed under the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.
 
 ## Data source
-The original data used in this project is available on the [MUDAB](https://www.mudab.de/en) website.
+The original data used in this project is available on the [4Demon](https://www.vliz.be/projects/4demon/index.htm) website.
 
 ## Reproducibility
 
