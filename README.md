@@ -1,6 +1,6 @@
 # 4Demon Pilot Database
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20072815.svg)](https://doi.org/10.5281/zenodo.20072815)
+[![DOI](https://zenodo.org/badge/1231115108.svg)](https://doi.org/10.5281/zenodo.20056924)
 
 This repository contains the source Quarto Markdown documents for the [Four Decades of Belgian Marine Monitoring (4Demon)](https://www.vliz.be/projects/4demon/index.htm) website.
 
