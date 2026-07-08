@@ -1,0 +1,75 @@
+---
+title: "EFSA Submission v2"
+subtitle: "Data export mapping for the FHF marine sediment data model"
+---
+
+```{css, echo=FALSE}
+th {
+  white-space: nowrap;
+}
+```
+
+The page presents the mapping between the [pilot database](db-schema.qmd) fields and the [EFSA Format v2](efsa-format-v2.qmd) columns.
+
+::: {.callout-note}
+### Note on Field Coverage
+Fields marked **Missing** are not captured by the pilot database and must be supplied manually (or left blank) at submission time. **Fixed Text** fields are constant across the whole 4Demon pilot dataset (e.g. all values are dry weight).
+:::
+
+```{r}
+library(dplyr)
+library(tibble)
+
+efsa_submission_v2 <- tribble(
+  ~Column,              ~Optionality,    ~`Source Table`,   ~`Source Columns`,     ~`Fixed Text`,  ~Missing, ~Notes,
+  "sampleId",           "Recommended",   "sample",          "sample_ref_code",     NA,             NA,       "Composite code already combining station, gear, and timestamp",
+  "samplingStrategy",   "Recommended",   NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "pristine",           "Mandatory",     NA,                NA,                    NA,             "Yes",    "Pollution status of the sampling area is not recorded in DB",
+  "collDate",           "Mandatory",     "sample",          "start_date",          NA,             NA,       NA,
+  "placeColl",          "Mandatory",     "station",         "sea_name",            NA,             NA,       NA,
+  "lat",                "Recommended",   "station",         "latitude",            NA,             NA,       NA,
+  "lon",                "Recommended",   "station",         "longitude",           NA,             NA,       NA,
+  "sedDepth",           "Mandatory",     "sample",          "depth_range",         NA,             NA,       "Always \"0-20 cm\" in this dataset — spans the 0-5cm/5-40cm boundary and needs manual bucketing",
+  "traceEl",            "Mandatory",     "parameter",       "parameter_name",      NA,             NA,       "Pilot DB covers 10 metals + 7 PCB congeners; FHF v2 targets metals only",
+  "value",              "Mandatory",     "sediment",        "value",               NA,             NA,       NA,
+  "sd",                 "Optional",      NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "unit",               "Mandatory",     "sediment",        "unit",                NA,             NA,       NA,
+  "resultType",         "Recommended",   NA,                NA,                    "dry weight",   NA,       "All 4Demon values are dry weight",
+  "moisture",           "Recommended",   NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "convertedValue",     "Mandatory",     "sediment",        "corrected_value",     NA,             NA,       "µg/g dry weight is numerically equivalent to mg/kg dry weight; no conversion needed",
+  "extractionClass",    "Mandatory",     NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "methAn",             "Mandatory",     "method",          "method_code",         NA,             NA,       NA,
+  "validatedMethod",    "Recommended",   NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "LOD",                "Mandatory",     NA,                NA,                    NA,             "Yes",    "sediment.det_limit_flag records only a 0/1 flag, not a numeric detection limit",
+  "LODUnit",            "Mandatory",     NA,                NA,                    NA,             "Yes",    "Not recorded in DB (see LOD)",
+  "LOQ",                "Recommended",   NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "LOQUnit",            "Recommended",   NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "accLab",             "Mandatory",     NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "phSed",              "Optional",      NA,                NA,                    NA,             "Yes",    "Not recorded in DB",
+  "sieve",              "Mandatory",     "method",          "fraction_range_um",   NA,             NA,       "Derived: 0-63 = <63µm sieved fraction, 0-2000 = unsieved/bulk",
+  "bulkAnalysis",       "Mandatory",     "method",          "matrix_code",         NA,             NA,       "Derived: matrix_code = US indicates bulk/unsieved analysis",
+  "ocSed",              "Mandatory",     NA,                NA,                    NA,             "Yes",    "Not recorded in DB; the pilot dataset covers only metals and PCB congeners",
+  "notes",              "Recommended",   NA,                NA,                    NA,             "Yes",    "Open field, left blank"
+)
+
+efsa_submission_v2 <- efsa_submission_v2 %>%
+  mutate(across(where(is.character), ~coalesce(.x, "")))
+```
+
+## Data Mapping for Submission
+
+```{r}
+efsa_submission_v2 %>%
+  filter(Missing != "Yes") %>%
+  select(-Missing)
+```
+
+## Full Data Mapping
+
+```{r}
+efsa_submission_v2
+```
+
+## Data Export Method
+
+As the submission tool is an Excel file, the data must be mapped column by column rather than through a standard row-based export. This approach ensures that the structure of the submission file is not disrupted.
