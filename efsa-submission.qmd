@@ -1,0 +1,88 @@
+---
+title: "EFSA Submission v1"
+subtitle: "Data export mapping for the EFSA reporting tool"
+---
+
+```{css, echo=FALSE}
+th {
+  white-space: nowrap;
+}
+```
+
+The page presents the mapping between the [pilot database](db-schema.qmd) fields and the [EFSA Format v1](efsa-format.qmd) columns.
+
+::: {.callout-note}
+### Note on Field Coverage
+Fields marked **Missing** are not captured by the pilot database and must be supplied manually (or left blank) at submission time. **Fixed Text** fields are constant across the whole 4Demon pilot dataset (e.g. all values are dry weight, all samples are marine sediment).
+:::
+
+```{r}
+library(dplyr)
+library(tibble)
+
+efsa_submission <- tribble(
+  ~Column,           ~Lookup, ~Optionality,           ~Table,      ~`Column Names`,               ~`Fixed Text`,                                   ~Missing,
+  "sampleId",        NA,      "Mandatory",            "sample",    "sample_ref_code",              NA,                                              NA,
+  "recId",           "Yes",   "Mandatory",            NA,          NA,                             NA,                                              NA,
+  "envComp",         NA,      "Mandatory",            NA,          NA,                             "marine sediment",                               NA,
+  "pristineLoc",     NA,      "Mandatory",            NA,          NA,                             NA,                                              "Yes",
+  "sampleLocGC",     NA,      "Mandatory",            "station",   "latitude + longitude",         NA,                                              NA,
+  "sampleLocCM",     NA,      "Mandatory",            "station",   "est_country + municipality",   NA,                                              NA,
+  "sampleDate",      NA,      "Mandatory",            "sample",    "start_date",                   NA,                                              NA,
+  "traceElText",     NA,      "Mandatory",            "parameter", "parameter_name",               NA,                                              NA,
+  "traceElCode",     "Yes",   "Mandatory",            NA,          NA,                             NA,                                              NA,
+  "specText",        NA,      "Mandatory",            "parameter", 'parameter_name + " (Total)"',  NA,                                              NA,
+  "specCode",        "Yes",   "Mandatory",            NA,          NA,                             NA,                                              NA,
+  "conc",            NA,      "Mandatory",            "sediment",  "corrected_value",              NA,                                              NA,
+  "unitText",        NA,      "Mandatory",            "sediment",  "unit",                         NA,                                              NA,
+  "unitCode",        "Yes",   "Mandatory",            NA,          NA,                             NA,                                              NA,
+  "weightText",      NA,      "Dependent Mandatory",  NA,          NA,                             "dw",                                            NA,
+  "weightCode",      "Yes",   "Dependent Mandatory",  NA,          NA,                             NA,                                              NA,
+  "methAnText",      NA,      "Mandatory",            "method",    "method_code",                  NA,                                              NA,
+  "methAnCode",      "Yes",   "Mandatory",            NA,          NA,                             NA,                                              NA,
+  "LOD",             NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "LOQ",             NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "accLab",          NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "phSed",           NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "TextureSedClay",  NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "TextureSedSilt",  NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "TextureSedSand",  NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "ocSed",           NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "phWater",         NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "hardWater",       NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "DOC",             NA,      "Optional",             NA,          NA,                             NA,                                              "Yes",
+  "publicData",      NA,      "Optional",             NA,          NA,                             "Yes",                                           NA,
+  "refPublication",  NA,      "Optional",             NA,          NA,                             "https://www.vliz.be/projects/4demon/index.htm", NA,
+  "comments",        NA,      "Optional",             NA,          NA,                             NA,                                              "Yes"
+)
+
+efsa_submission_full <- efsa_submission %>%
+  mutate(
+    across(
+      where(is.character),
+      ~coalesce(.x, "")
+    )
+  ) %>%
+  rename(c(`Source Table` = "Table",
+           `Source Columns` = "Column Names"))
+
+efsa_submission <- efsa_submission_full %>%
+  filter(Lookup != "Yes") %>%
+  dplyr::select(-c(Lookup, Missing))
+
+```
+
+## Data Mapping for Submission
+```{r}
+efsa_submission
+```
+
+## Full Data Mapping
+```{r}
+efsa_submission_full
+```
+
+## Data Export Method
+As the EFSA submission tool is an Excel file containing embedded macros, the data must be mapped column by column rather than through a standard row‑based export. This approach ensures that the structure of the submission file is not disrupted.
+
+Note that the EFSA v1 catalogue's trace element list (Co, Cu, I, Mn, Mo, Se, Zn) only partially overlaps with the pilot database's `parameter` table (10 metals: AL, AS, CD, CR, CU, FE, HG, NI, PB, ZN, plus 7 PCB congeners). Only copper (`CU`) and zinc (`ZN`) can currently be submitted under this format.

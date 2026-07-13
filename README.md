@@ -30,3 +30,7 @@ Use the ``Render Website`` option in RStudio.
 
 > [!Note]
 > The website deployed on GitHub Pages is automatically built using the same workflow and environment configuration.
+
+## Branching & Deployment
+
+This repository follows [Gitflow](https://nvie.com/posts/a-successful-git-branching-model/): work happens on `feature/*` branches off `develop`, merged back into `develop` without a pull request. `main` reflects the published site — merging/pushing to `main` triggers `.github/workflows/publish.yml`, which renders the Quarto site and deploys it to GitHub Pages. Pushes to `develop` do not deploy.
