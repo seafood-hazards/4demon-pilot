@@ -1,6 +1,6 @@
 ---
 title: "EFSA Submission v1"
-subtitle: "Data export mapping for the EFDA reporting tool"
+subtitle: "Data export mapping for the EFSA reporting tool"
 ---
 
 ```{css, echo=FALSE}
