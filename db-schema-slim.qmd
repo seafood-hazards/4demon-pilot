@@ -1,0 +1,157 @@
+---
+title: "DB Schema (Slim)"
+subtitle: A common database schema for multi-source sediment trace element data
+---
+
+```{css, echo=FALSE}
+th {
+  white-space: nowrap;
+}
+```
+
+The page shows the schema diagram and table definitions for the slim database, designed as a common schema that can accommodate multiple data sources.
+
+## DB Schema Diagram
+
+The slim schema contains seven tables. The hierarchy flows from `dataset` and `site` through `event` and `subsample` to `measurement`. The `element` table serves as a lookup for both `method` and `measurement` via the `symbol` key.
+
+![](./image/4demon_slim.webp){.zoomable}
+
+::: {.callout-warning}
+The `symbol` column in `measurement` is an intentional denormalization — it is derivable via `method_id → method.symbol` but is retained as a key for query efficiency.
+:::
+
+## Element Table
+
+The element table is a lookup table mapping chemical symbols to element names.
+
+### Table Columns
+```{r}
+library(tibble)
+
+element_tbl <- tribble(
+  ~Name,      ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
+  "symbol",   "TEXT",       "✓", "",            "Primary Key. Chemical symbol (e.g., Co, Cu).",
+  "element",  "TEXT",       "",  "",            "Full element name (e.g., Cobalt, Copper)."
+)
+
+element_tbl
+```
+
+## Dataset Table
+
+The dataset table represents a data collection campaign or source (e.g., Mareano Cruise, Marine Basecamp Cruise).
+
+### Table Columns
+```{r}
+dataset_tbl <- tribble(
+  ~Name,          ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
+  "dataset_id",   "INTEGER",    "✓", "",            "Primary Key. Unique dataset identifier.",
+  "source",       "TEXT",       "",  "",            "Name of the source database (e.g., ICES-DOME).",
+  "dataset_name", "TEXT",       "",  "",            "Name of the data collection campaign.",
+  "country",      "TEXT",       "",  "",            "Country of origin."
+)
+
+dataset_tbl
+```
+
+## Site Table
+
+The site table stores unique geographic locations, keyed on latitude and longitude rounded to three decimal places.
+
+### Table Columns
+```{r}
+site_tbl <- tribble(
+  ~Name,           ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
+  "site_id",       "INTEGER",    "✓", "",            "Primary Key. Unique site identifier.",
+  "latitude",      "REAL",       "",  "",            "Latitude in decimal degrees (rounded to 3 d.p.).",
+  "longitude",     "REAL",       "",  "",            "Longitude in decimal degrees (rounded to 3 d.p.).",
+  "country",       "TEXT",       "",  "✓",           "Nearest country.",
+  "country_code",  "TEXT",       "",  "✓",           "ISO country code.",
+  "dist_to_coast", "INTEGER",    "",  "✓",           "Distance to nearest coastline (km).",
+  "municipality",  "TEXT",       "",  "✓",           "Nearest municipality.",
+  "sea_name",      "TEXT",       "",  "✓",           "Name of the sea or ocean body."
+)
+
+site_tbl
+```
+
+## Event Table
+
+The event table represents a single sampling event — one deployment of a sampling tool at a site.
+
+### Table Columns
+```{r}
+event_tbl <- tribble(
+  ~Name,               ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
+  "event_id",          "INTEGER",    "✓", "",            "Primary Key. Unique event identifier.",
+  "dataset_id",        "INTEGER",    "",  "",            "Foreign Key to Dataset table.",
+  "site_id",           "INTEGER",    "",  "",            "Foreign Key to Site table.",
+  "sampling_tool",     "TEXT",       "",  "✓",           "Sampling tool used (e.g., BC, MC, GR).",
+  "year",              "INTEGER",    "",  "✓",           "Year of the sampling event.",
+  "date",              "TEXT",       "",  "✓",           "Date of the sampling event (format YYYY-MM-DD)."
+)
+
+event_tbl
+```
+
+## Method Table
+
+The method table stores unique combinations of analytical method, LOD, and LOQ per chemical symbol.
+
+### Table Columns
+```{r}
+method_tbl <- tribble(
+  ~Name,                 ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
+  "method_id",           "INTEGER",    "✓", "",            "Primary Key. Unique method identifier.",
+  "symbol",              "TEXT",       "",  "",            "Foreign Key to Element table.",
+  "method",              "TEXT",       "",  "✓",           "Analytical method (e.g., ICP-MS, ICP-AES)."
+)
+
+method_tbl
+```
+
+## Subsample Table
+
+The subsample table represents a discrete depth interval extracted from a sampling event.
+
+### Table Columns
+```{r}
+subsample_tbl <- tribble(
+  ~Name,            ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
+  "subsample_id",   "INTEGER",    "✓", "",            "Primary Key. Unique subsample identifier.",
+  "event_id",       "INTEGER",    "",  "",            "Foreign Key to Event table.",
+  "depth_from",     "INTEGER",    "",  "",            "Top depth of the sample interval (cm).",
+  "depth_to",       "INTEGER",    "",  "",            "Bottom depth of the sample interval (cm).",
+  "matrix",         "TEXT",       "",  "✓",           "Matrix being analyzed.",
+  "fraction_range", "TEXT",       "",  "✓",           "Grain size fraction analysed (e.g. 0-63 = fine fraction <63 µm, 0-2000 = bulk <2 mm)."
+)
+
+subsample_tbl
+```
+
+## Measurement Table
+
+The measurement table stores chemical concentration values per subsample and symbol.
+
+### Table Columns
+```{r}
+measurement_tbl <- tribble(
+  ~Name,                   ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
+  "measurement_id",        "INTEGER",    "✓", "",            "Primary Key. Unique measurement identifier.",
+  "subsample_id",          "INTEGER",    "",  "",            "Foreign Key to Subsample table.",
+  "symbol",                "TEXT",       "",  "",            "Chemical symbol; Foreign Key to Element table. Retained as key (denormalized from method).",
+  "value",                 "REAL",       "",  "",            "Measured concentration value.",
+  "corrected_value",       "REAL",       "",  "✓",           "Corrected value after quality control (e.g. below-detection substitutions). Recommended for analysis.",
+  "unit",                  "TEXT",       "",  "✓",           "Unit of measurement (e.g., mg/kg).",
+  "basis",                 "TEXT",       "",  "✓",           "Basis of measurement, e.g. D (dry weight).",
+  "vflag",                 "TEXT",       "",  "✓",           "Data quality flag: 0 = valid, 1 = suspect, 2 = below detection limit, 3 = invalid.",
+  "limit_flag",            "TEXT",       "",  "✓",           "Detection limit flag: 0 = above detection limit, 1 = at or below detection limit.",
+  "range_check_flag",      "TEXT",       "",  "✓",           "Range check flag: 0 = within expected range, 1 = outside expected range, NA = not checked.",
+  "outlier_extreme_flag",  "TEXT",       "",  "✓",           "Extreme outlier flag per parameter: 0 = normal, 1 = moderate outlier, 2 = extreme outlier.",
+  "outlier_stdev_flag",    "TEXT",       "",  "✓",           "Standard deviation outlier flag: 0 = within normal range, 1 = outlier based on standard deviation threshold.",
+  "method_id",             "INTEGER",    "",  "",            "Foreign Key to Method table."
+)
+
+measurement_tbl
+```
