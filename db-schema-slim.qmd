@@ -48,10 +48,8 @@ dataset_tbl <- tribble(
   ~Name,          ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
   "dataset_id",   "INTEGER",    "✓", "",            "Primary Key. Unique dataset identifier.",
   "source",       "TEXT",       "",  "",            "Name of the source database (e.g., ICES-DOME).",
-  "dataset_code", "TEXT",       "",  "",            "Identifier of the dataset in the source database (e.g., project code).",
   "dataset_name", "TEXT",       "",  "",            "Name of the data collection campaign.",
-  "country",      "TEXT",       "",  "",            "Country of origin.",
-  "institute",    "TEXT",       "",  "✓",           "Reporting institute code(s) (comma-separated if multiple)."
+  "country",      "TEXT",       "",  "",            "Country of origin."
 )
 
 dataset_tbl
@@ -90,7 +88,6 @@ event_tbl <- tribble(
   "dataset_id",        "INTEGER",    "",  "",            "Foreign Key to Dataset table.",
   "site_id",           "INTEGER",    "",  "",            "Foreign Key to Site table.",
   "sampling_tool",     "TEXT",       "",  "✓",           "Sampling tool used (e.g., BC, MC, GR).",
-  "tool_description",  "TEXT",       "",  "✓",           "Description of the sampling tool.",
   "year",              "INTEGER",    "",  "✓",           "Year of the sampling event.",
   "date",              "TEXT",       "",  "✓",           "Date of the sampling event (format YYYY-MM-DD)."
 )
@@ -108,12 +105,7 @@ method_tbl <- tribble(
   ~Name,                 ~`Data Type`, ~PK, ~`NA Allowed`, ~Description,
   "method_id",           "INTEGER",    "✓", "",            "Primary Key. Unique method identifier.",
   "symbol",              "TEXT",       "",  "",            "Foreign Key to Element table.",
-  "lab",                 "TEXT",       "",  "✓",           "Analysing laboratory code.",
-  "lab_name",            "TEXT",       "",  "✓",           "Name of the analysing laboratory.",
-  "lod",                 "REAL",       "",  "✓",           "Limit of Detection.",
-  "loq",                 "REAL",       "",  "✓",           "Limit of Quantification.",
-  "method",              "TEXT",       "",  "✓",           "Analytical method (e.g., ICP-MS, ICP-AES).",
-  "method_description",  "TEXT",       "",  "✓",           "Description of the analytical method."
+  "method",              "TEXT",       "",  "✓",           "Analytical method (e.g., ICP-MS, ICP-AES)."
 )
 
 method_tbl
