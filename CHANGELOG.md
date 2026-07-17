@@ -6,6 +6,12 @@ As this project is still in active development, it does not yet strictly adhere 
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-07-17
+### Added
+- "DB Schema (Slim)" page documenting a common multi-source sediment schema, with table definitions aligned to the 4Demon-to-slim conversion script
+### Changed
+- Renamed "DB Schema" page to "DB Schema (Full)" and updated nav/home page links accordingly
+
 ## [0.1.3] - 2026-07-13
 ### Added
 - EFSA Format v1/v2 and EFSA Submission v1/v2 pages under Data Export, mapping pilot database fields to the EFSA/FHF submission formats
