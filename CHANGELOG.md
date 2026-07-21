@@ -6,6 +6,10 @@ As this project is still in active development, it does not yet strictly adhere 
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-07-21
+### Changed
+- Moved `matrix` and `fraction_range` columns from the Subsample table to the Measurement table in the "DB Schema (Slim)" page, and updated the schema diagram accordingly
+
 ## [0.1.4] - 2026-07-17
 ### Added
 - "DB Schema (Slim)" page documenting a common multi-source sediment schema, with table definitions aligned to the 4Demon-to-slim conversion script
