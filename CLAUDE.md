@@ -10,7 +10,7 @@ Presents a pilot SQLite schema + geospatial/data analysis of the 4Demon Belgian 
 - `download_resources.R` (pre-render script) fetches the sqlite DB and sql.js/stratum-sqlite libs into `libs/sqljs/` if not already present — needed for local Quarto renders.
 
 ## Layout
-- `index.qmd`, `db-schema.qmd`, `data-preparation.qmd`, `distance-to-coast.qmd`, `location-names.qmd`, `distance-interactive-map.qmd`, `data-export.qmd`, `pilot-db-viewer.qmd`, `sediment-map.qmd` — nav pages, structure/order defined in `_quarto.yml`.
+- `index.qmd`, `db-schema.qmd`, `data-preparation.qmd`, `db-schema-slim.qmd`, `database-downloads.qmd`, `distance-to-coast.qmd`, `location-names.qmd`, `distance-interactive-map.qmd`, `data-export.qmd`, `efsa-format.qmd`, `efsa-submission.qmd`, `efsa-format-v2.qmd`, `efsa-submission-v2.qmd`, `pilot-db-viewer.qmd`, `sediment-map.qmd` — nav pages, structure/order defined in `_quarto.yml`.
 - `header.html` — injected `<head>` JS/CSS: image-zoom modal, stratum-sqlite init (resolves DB/lib paths relative to page depth).
 - `image/`, `libs/` (generated, gitignored) — not needed for editing content.
 - DB schema: 6 tables — `project`, `station`, `parameter`, `method` (reference), `sample`, `sediment` (fact table). See `db-schema.qmd` for full column definitions.
