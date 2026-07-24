@@ -6,6 +6,10 @@ As this project is still in active development, it does not yet strictly adhere 
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-07-24
+### Added
+- "Database Downloads" page with links to the full and slim SQLite database releases
+
 ## [0.1.5] - 2026-07-21
 ### Changed
 - Moved `matrix` and `fraction_range` columns from the Subsample table to the Measurement table in the "DB Schema (Slim)" page, and updated the schema diagram accordingly
