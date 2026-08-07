@@ -10,7 +10,6 @@
 /.idea
 
 *.sqlite
-/pilot_4demon.tsv.gz
 /libs/
 
 
