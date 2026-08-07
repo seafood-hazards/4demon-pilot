@@ -54,11 +54,11 @@ tribble(
   "station_group", "TEXT",       "",   "",    TRUE,          "Station group: BCP = Belgian Continental Platform (offshore), BCP_nearby_coast_(<500m) = nearshore stations within 500 m of coast.", "",
   "latitude",      "REAL",       "",   "",    TRUE,          "Corrected latitude of the sampling station (decimal degrees, WGS84).",    "",
   "longitude",     "REAL",       "",   "",    TRUE,          "Corrected longitude of the sampling station (decimal degrees, WGS84).",   "",
-  "dist_to_coast", "REAL",       "",   "",    TRUE,          "Distance from station to nearest coastline (km).",                        "",
-  "est_country",   "TEXT",       "",   "",    TRUE,          "Estimated country derived from station coordinates.",                     "",
-  "country_code",  "TEXT",       "",   "",    TRUE,          "ISO country code (e.g. BE for Belgium).",                                 "",
-  "municipality",  "TEXT",       "",   "",    TRUE,          "Municipality name nearest to the station.",                               "",
-  "sea_name",      "TEXT",       "",   "",    TRUE,          "Name of the sea or marine region.",                                       ""
+  "dist_to_coast", "REAL",       "",   "",    TRUE,          "Distance to the nearest coastline (km), computed with seastamp.",         "",
+  "est_country",   "TEXT",       "",   "",    TRUE,          "Nearest country (Natural Earth).",                                        "",
+  "country_code",  "TEXT",       "",   "",    TRUE,          "ISO 3166-1 alpha-3 code of the nearest country (e.g. BEL for Belgium).",  "",
+  "municipality",  "TEXT",       "",   "",    TRUE,          "Nearest municipality (Eurostat GISCO LAU), Europe only.",                 "",
+  "sea_name",      "TEXT",       "",   "",    TRUE,          "Sea or ocean name (IHO Sea Areas v3).",                                   ""
 )
 ```
 

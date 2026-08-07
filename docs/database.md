@@ -25,6 +25,20 @@ Six tables, the smallest of the five pilot databases: four reference tables plus
 Site coordinates are rounded to 3 decimal places. The nearest-country column is
 `est_country`, as on ICES-DOME and MUDAB.
 
+## The geo columns
+
+`station.dist_to_coast`, `est_country`, `country_code`, `municipality` and
+`sea_name` are computed by the external
+[seastamp](https://github.com/AIQC-Hub/seastamp) CLI (GSHHG full resolution,
+Natural Earth 1:10m, GISCO LAU 2021, IHO Sea Areas v3), run over the distinct
+station positions in an LAEA projection derived from the points themselves. They
+are **not** in the raw 4Demon export.
+
+They were recomputed at site v0.1.8: before that they came from an `sf` /
+`rnaturalearth` / `giscoR` implementation, under which every station read
+`North Atlantic Ocean` rather than `North Sea`. `distance-to-coast.qmd` and
+`location-names.qmd` document the method and the measured change.
+
 Two things make this source distinctive downstream. `sediment` is the only pilot
 fact table carrying **source-native quality flags**, which the slim generation
 folds into its `src_flag`. And 4Demon reports **no grain size and no organic
