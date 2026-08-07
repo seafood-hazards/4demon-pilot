@@ -6,6 +6,14 @@ As this project is still in active development, it does not yet strictly adhere 
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-08-07
+### Changed
+- **Geospatial columns recomputed with [seastamp](https://github.com/AIQC-Hub/seastamp)**, the tool the whole pipeline now uses, replacing the earlier `sf` / `rnaturalearth` / `giscoR` implementation. Across the 160 distinct station positions: `dist_to_coast` moves by a median of 0.03 km (largest 0.3 km, the closest agreement of the five pilot sources), `municipality` is reassigned for 129, `sea_name` for all, and `est_country` is unchanged
+- `sea_name` is now `North Sea` for every station rather than `North Atlantic Ocean`: the Belgian Continental Shelf lies entirely within the North Sea
+- `country_code` is now ISO 3166-1 alpha-3 (`BEL`) rather than alpha-2 (`BE`)
+- Distance Calculation and Estimation of Location Names pages rewritten for the seastamp method and data sources
+- Station table schema describes the source and units of each geospatial column
+
 ## [0.1.7] - 2026-08-07
 ### Added
 - Pipeline Generations section on the home page (`_generations.qmd`), with links to the other four pilot sites and to the slim, clean, merged and refined generation sites
