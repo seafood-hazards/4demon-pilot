@@ -1,32 +1,43 @@
-# CLAUDE.md
+# 4demon-pilot
 
-Static site for the **4Demon Pilot Database**, built with Quarto (R) and deployed to GitHub Pages.
-Presents a pilot SQLite schema + geospatial/data analysis of the 4Demon Belgian marine sediment monitoring dataset.
+Quarto static website for the 4Demon Pilot Database
+(https://seafood-hazards.github.io/4demon-pilot/), deployed to GitHub Pages.
+4Demon is Four Decades of Belgian Marine Monitoring. One of five per-source
+sites for the **pilot** generation of the `multised-engine` pipeline
+(`../multised-engine`).
 
-## Stack
-- Quarto website project (`_quarto.yml`), R 4.6.0 via `renv` (`renv.lock`).
-- Pages are `.qmd` — R chunks for tables/data prep, `{ojs}` (Observable JS) chunks for interactive client-side widgets (Leaflet maps, Plot charts, `Inputs.table`).
-- Client-side SQLite: `pilot_4demon.sqlite` is queried in-browser via `stratum-sqlite` + `sql.js` (wasm). `_db-setup.qmd` opens the shared `db` connection; page `.qmd` files `{{< include _db-setup.qmd >}}` it before running `db.query(...)`.
-- `download_resources.R` (pre-render script) fetches the sqlite DB and sql.js/stratum-sqlite libs into `libs/sqljs/` if not already present — needed for local Quarto renders.
+## The one dependency
 
-## Layout
-- `index.qmd`, `db-schema.qmd`, `data-preparation.qmd`, `db-schema-slim.qmd`, `database-downloads.qmd`, `distance-to-coast.qmd`, `location-names.qmd`, `distance-interactive-map.qmd`, `data-export.qmd`, `efsa-format.qmd`, `efsa-submission.qmd`, `efsa-format-v2.qmd`, `efsa-submission-v2.qmd`, `pilot-db-viewer.qmd`, `sediment-map.qmd` — nav pages, structure/order defined in `_quarto.yml`.
-- `header.html` — injected `<head>` JS/CSS: image-zoom modal, stratum-sqlite init (resolves DB/lib paths relative to page depth).
-- `image/`, `libs/` (generated, gitignored) — not needed for editing content.
-- DB schema: 6 tables — `project`, `station`, `parameter`, `method` (reference), `sample`, `sediment` (fact table). See `db-schema.qmd` for full column definitions.
+`4demon_pilot.sqlite`, downloaded from this repository's **latest** GitHub
+release by the `download_resources.R` pre-render step and queried in the browser.
+The site builds nothing from raw data and ships no other data file.
 
-## Conventions
-- New nav page → add `.qmd` file + register it in `_quarto.yml` under `website.navbar.left`.
-- Chunk options: `echo: false`, `warning: false`, `message: false` are global defaults (`_quarto.yml`); R tables use `df-print: kable`.
-- OJS SQL queries interpolate filter values directly into template strings (e.g. `sediment-map.qmd`) — this is a client-side, read-only, single-user wasm DB (no server, no auth boundary), so this is accepted here; don't "fix" it into parameterized queries without discussing, since stratum-sqlite/sql.js query API is string-based.
-- Keep page prose consistent with existing pages' tone: short methods explanation + caveats callout (`::: {.callout-note}`) where data is estimated/algorithmic.
+Two rules follow from that, and they are the ones that break the site when
+missed:
 
-## Workflow
-- Gitflow branching: `main` (published/deployed) ← `develop` ← `feature/*`. Merge feature branches into `develop` directly (no PR); no need to open a pull request for routine feature work.
-- CI/CD: `.github/workflows/publish.yml` — push to `main` triggers `quarto render` + deploy to GitHub Pages. `develop` pushes do **not** deploy.
-- Releases: GitHub release assets referenced directly in pages, e.g. `data-export.qmd` and `download_resources.R` link to `.../releases/download/vX.Y.Z/...`. Bump `CHANGELOG.md` (Keep a Changelog format) on notable changes.
-- Local render: `renv::restore()` then Quarto "Render Website" in RStudio.
+- **every release must carry the database as an asset**, or the next render 404s
+- **bump the `cacheKey` in `_db-setup.qmd` whenever the database content
+  changes**, or returning browsers serve a stale cached copy
 
-## Don't
-- Don't read/edit `pilot_4demon.sqlite` directly (binary; source of truth is upstream 4Demon export, prepared per `data-preparation.qmd`).
-- Don't hand-edit `.quarto/`, `_site/`, `libs/` — all generated/gitignored.
+## Build
+
+```r
+renv::restore()   # restore R packages
+```
+
+```bash
+quarto render     # renders the site to _site/
+```
+
+## Docs
+
+| Doc | Covers |
+|-----|--------|
+| [database.md](docs/database.md) | the six-table schema, the native quality flags, how a page queries it |
+| [site.md](docs/site.md) | stack, build, page list, gitflow, the release procedure |
+
+## Scope
+
+Pilot generation, 4Demon only. The slim, clean, merged and refined generations
+have their own sites: do not link to their pages, document their schemas, or
+publish their database files here.
