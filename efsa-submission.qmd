@@ -12,6 +12,14 @@ th {
 The page presents the mapping between the [pilot database](db-schema.qmd) fields and the [EFSA Format v1](efsa-format.qmd) columns.
 
 ::: {.callout-note}
+The location columns this mapping draws on (`dist_to_coast`, the nearest country and
+its code, `municipality`, `sea_name`) are **reserved but empty** in the pilot
+database. The mapping below is the schema mapping, not a statement about coverage:
+the values are derived at the clean stage, which recomputes and overwrites them. See
+[DB Schema](./db-schema.qmd).
+:::
+
+::: {.callout-note}
 ### Note on Field Coverage
 Fields marked **Missing** are not captured by the pilot database and must be supplied manually (or left blank) at submission time. **Fixed Text** fields are constant across the whole 4Demon pilot dataset (e.g. all values are dry weight, all samples are marine sediment).
 :::
